@@ -562,7 +562,7 @@ select.control { appearance: none; background-image: url("data:image/svg+xml;utf
    THANK YOU PAGE
    ============================================================ */
 .ty {
-  min-height: 100vh; display: flex; flex-direction: column;
+  min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column;
   background: var(--ink); color: var(--cream);
   background-image:
     radial-gradient(110% 70% at 80% -10%, rgba(199,248,56,0.16), transparent 55%),
@@ -589,7 +589,7 @@ select.control { appearance: none; background-image: url("data:image/svg+xml;utf
 .ty-step p { font-size: 13.5px; color: rgba(246,243,236,0.68); font-weight: 500; }
 .ty-note { background: rgba(199,248,56,0.08); border: 1px solid rgba(199,248,56,0.25); border-radius: var(--radius); padding: 20px 24px; font-size: 14.5px; color: rgba(246,243,236,0.85); font-weight: 500; max-width: 600px; margin: 0 auto 30px; }
 .ty-note b { color: var(--lime); }
-.ty-foot { padding: 24px var(--gutter); border-top: 1px solid var(--line-dark); text-align: center; font-size: 12px; color: rgba(246,243,236,0.4); line-height: 1.7; }
+.ty-foot { padding: 26px var(--gutter) calc(56px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line-dark); text-align: center; font-size: 12px; color: rgba(246,243,236,0.4); line-height: 1.7; }
 .ty-foot a { color: rgba(199,248,56,0.8); }
 .ty-header { padding: 24px var(--gutter); }
 
@@ -652,7 +652,7 @@ select.control { appearance: none; background-image: url("data:image/svg+xml;utf
 
 
 /* in-page confirmation overlay */
-#tyView{position:fixed;inset:0;z-index:2000;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#tyView{position:fixed;inset:0;z-index:2000;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:env(safe-area-inset-top,0px);}
 #tyView[hidden]{display:none;}
 </style>
 
