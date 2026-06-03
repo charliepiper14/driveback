@@ -277,20 +277,40 @@ h1,h2,h3,h4 { font-family: var(--font-display); font-weight: 700; line-height: 1
 /* ============================================================
    HOW IT WORKS
    ============================================================ */
-.steps3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+.steps3 {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 44px;
+  position: relative;
+}
 .step-card {
   background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-lg);
-  padding: 36px 30px; position: relative; box-shadow: var(--shadow-sm);
-  transition: transform .35s var(--ease), box-shadow .35s;
+  padding: 54px 36px 42px; position: relative; box-shadow: var(--shadow-sm);
+  transition: transform .35s var(--ease), box-shadow .35s; overflow: visible;
 }
-.step-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
-.step-card .n {
-  font-family: var(--font-display); font-weight: 800; font-size: 15px; color: var(--ink);
-  width: 44px; height: 44px; border-radius: 14px; background: var(--lime); display: grid; place-items: center; margin-bottom: 22px;
+.step-card::before {            /* lime accent bar at the top of each card */
+  content:""; position:absolute; top:0; left:36px; right:36px; height:5px;
+  border-radius:0 0 8px 8px; background:linear-gradient(90deg,var(--lime),var(--lime-deep));
 }
-.step-card .ic { width: 52px; height: 52px; margin-bottom: 18px; color: var(--ink); }
-.step-card h3 { font-size: 22px; margin-bottom: 10px; font-weight: 800; }
-.step-card p { font-size: 15px; color: var(--slate); font-weight: 500; }
+.step-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-md); }
+.step-ic {
+  position: relative; width: 100px; height: 100px; border-radius: 50%;
+  background: radial-gradient(125% 125% at 30% 22%, var(--lime-soft), var(--lime) 58%);
+  display: grid; place-items: center; margin-bottom: 28px;
+  box-shadow: 0 16px 36px rgba(174,227,24,0.42);
+}
+.step-ic .ic { width: 50px; height: 50px; color: var(--ink); }
+.step-no {
+  position: absolute; top: -10px; right: -10px; width: 42px; height: 42px; border-radius: 50%;
+  background: var(--ink); color: #fff; font-family: var(--font-display); font-weight: 800;
+  font-size: 18px; display: grid; place-items: center; border: 4px solid var(--white);
+  box-shadow: var(--shadow-sm);
+}
+.step-card h3 { font-size: clamp(23px,2.3vw,28px); margin-bottom: 12px; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; }
+.step-card p  { font-size: 16px; line-height: 1.62; color: var(--slate); font-weight: 500; }
+.step-card:not(:last-child)::after {   /* connector pointing to the next step */
+  content:""; position:absolute; top: 96px; right: -31px; width: 18px; height: 18px;
+  border-top: 4px solid var(--lime-deep); border-right: 4px solid var(--lime-deep);
+  border-radius: 2px; transform: rotate(45deg); z-index: 4;
+}
 .step-card .connector { display: none; }
 
 /* ============================================================
@@ -593,7 +613,14 @@ select.control { appearance: none; background-image: url("data:image/svg+xml;utf
 
 @media (max-width: 760px) {
   body { font-size: 16px; }
-  .steps3 { grid-template-columns: 1fr; }
+  .steps3 { grid-template-columns: 1fr; gap: 42px; }
+  .step-card { padding: 46px 26px 34px; text-align: center; }
+  .step-card::before { left: 28px; right: 28px; }
+  .step-ic { margin-left: auto; margin-right: auto; }
+  .step-card:not(:last-child)::after {
+    top: auto; bottom: -31px; right: auto; left: 50%;
+    transform: translateX(-50%) rotate(135deg);
+  }
   .hero { padding-top: 116px; }
   .hero-photo { background-position: center; background-image: linear-gradient(180deg, rgba(10,15,30,0.88) 0%, rgba(10,15,30,0.62) 48%, rgba(10,15,30,0.58) 100%), url('https://res.cloudinary.com/dcnabm5nc/image/upload/f_auto,q_auto,w_1400/v1780452883/photo-1574023240744-64c47c8c0676_wihlak.jpg'), linear-gradient(120deg, #16213f, #0a0f1e); }
   .header-phone span { display: none; }
@@ -813,22 +840,19 @@ select.control { appearance: none; background-image: url("data:image/svg+xml;utf
     </div>
     <div class="steps3">
       <div class="step-card reveal">
-        <div class="n">1</div>
-        <svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="21" cy="21" r="13"/><path d="M31 31l8 8"/></svg>
+        <div class="step-ic"><span class="step-no">1</span><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="28" r="15"/><path d="M24 28V18"/><path d="M24 28l6.5 4"/><path d="M19 5h10"/><path d="M24 5v6"/><path d="M38.5 13.5l2.5-2.5"/></svg></div>
         <h3>Check in 60 seconds</h3>
-        <p>Tell us a few quick details. No documents, no agreement numbers — just you.</p>
+        <p>Answer a few quick questions about yourself. No documents, no agreement numbers, no digging — just you.</p>
       </div>
       <div class="step-card reveal d1">
-        <div class="n">2</div>
-        <svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 38V14a4 4 0 014-4h24a4 4 0 014 4v24"/><path d="M8 26h32"/><circle cx="16" cy="32" r="3"/><circle cx="32" cy="32" r="3"/></svg>
+        <div class="step-ic"><span class="step-no">2</span><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="21" cy="21" r="13"/><path d="M31 31l9 9"/><path d="M16 18.5h10"/><path d="M16 24h6.5"/></svg></div>
         <h3>We find your agreements</h3>
-        <p>A soft credit search traces eligible PCP &amp; HP finance you held — it won't affect your credit score.</p>
+        <p>A soft credit search traces the eligible PCP &amp; HP finance you held. It's all done for you and won't affect your credit score.</p>
       </div>
       <div class="step-card reveal d2">
-        <div class="n">3</div>
-        <svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6v28"/><path d="M14 24l10 10 10-10"/><path d="M8 42h32"/></svg>
+        <div class="step-ic"><span class="step-no">3</span><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="13" width="38" height="22" rx="4"/><circle cx="11.5" cy="18.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="36.5" cy="29.5" r="1.4" fill="currentColor" stroke="none"/><text x="24" y="29.5" font-size="16" font-weight="800" text-anchor="middle" fill="currentColor" stroke="none" font-family="Bricolage Grotesque, sans-serif">£</text></svg></div>
         <h3>Get your refund</h3>
-        <p>Eligible claims are pursued under the FCA redress scheme. No win, no fee — you only pay if you're paid.</p>
+        <p>Eligible claims are pursued under the FCA redress scheme. No win, no fee — you only pay if your claim succeeds.</p>
       </div>
     </div>
   </div>
