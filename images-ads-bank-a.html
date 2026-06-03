@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DriveBack — Photo Ad Set (1:1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --ink:#0A0F1E; --cream:#F6F3EC; --lime:#C7F838; --lime-deep:#AEE318; --coral:#FF5B3A;
+    --d:'Bricolage Grotesque', sans-serif; --b:'Manrope', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:#0c1020; color:#F6F3EC; font-family:var(--b); padding:40px 20px 80px; -webkit-font-smoothing:antialiased;}
+  .page-head{max-width:1040px; margin:0 auto 34px; text-align:center;}
+  .page-head h1{font-family:var(--d); font-weight:800; font-size:30px; margin-bottom:8px;}
+  .page-head p{color:#9AA3B8; font-size:15px; line-height:1.6; max-width:760px; margin:0 auto;}
+  .grid{display:flex; flex-wrap:wrap; gap:34px; justify-content:center; max-width:1100px; margin:0 auto;}
+  .card{width:480px;}
+  .frame{width:480px; height:480px; overflow:hidden; border-radius:20px; box-shadow:0 18px 50px rgba(0,0,0,.45);}
+  .controls{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px;}
+  .controls .label{font-family:var(--d); font-weight:700; font-size:15px; color:#cfd6e6;}
+  .dlbtn{font-family:var(--d); font-weight:800; font-size:14px; color:#0A0F1E; background:var(--lime); border:none;
+    border-radius:999px; padding:11px 18px; cursor:pointer; transition:transform .15s, background .15s;}
+  .dlbtn:hover{background:#fff; transform:translateY(-1px);}
+  .dlbtn:active{transform:translateY(0);}
+
+  /* ---------- the 1080x1080 ad stage ---------- */
+  .stage{width:1080px; height:1080px; position:relative; overflow:hidden; transform:scale(.4444); transform-origin:top left; color:var(--cream); font-family:var(--b);}
+  .bg{position:absolute; inset:0; background-size:cover; background-position:center;}
+  .scrim{position:absolute; inset:0;}
+  .glow{position:absolute; inset:0; background:radial-gradient(120% 55% at 82% -8%, rgba(199,248,56,.20), transparent 52%);}
+  .brand{position:absolute; top:56px; left:62px; display:flex; align-items:center; gap:16px; z-index:5;}
+  .brand .wm{font-family:var(--d); font-weight:800; font-size:42px; letter-spacing:-.01em; color:var(--cream);}
+  .brand .wm b{color:var(--lime);}
+  .content{position:absolute; left:62px; right:62px; bottom:66px; z-index:5;}
+  .eyebrow{display:inline-block; font-family:var(--d); font-weight:800; font-size:26px; letter-spacing:.01em;
+    background:var(--lime); color:var(--ink); padding:12px 26px; border-radius:999px; margin-bottom:22px;}
+  .eyebrow.coral{background:var(--coral); color:#fff;}
+  h2.head{font-family:var(--d); font-weight:800; font-size:84px; line-height:1.02; letter-spacing:-.015em; text-shadow:0 4px 30px rgba(0,0,0,.5);}
+  h2.head .hl{color:var(--lime);}
+  .sub{font-size:34px; font-weight:600; color:rgba(246,243,236,.92); margin-top:20px; line-height:1.3;}
+  .sub .hl{color:var(--lime); font-weight:800;}
+  .chip{display:inline-flex; align-items:center; font-family:var(--d); font-weight:800; font-size:33px;
+    border:3px solid rgba(199,248,56,.55); border-radius:18px; padding:14px 28px; margin-top:24px; color:rgba(246,243,236,.85);}
+  .chip b{color:var(--lime); margin-left:14px;}
+  .cta{display:inline-flex; align-items:center; gap:18px; font-family:var(--d); font-weight:800; font-size:42px;
+    background:var(--lime); color:var(--ink); padding:28px 46px; border-radius:999px; margin-top:34px;
+    box-shadow:0 16px 40px rgba(174,227,24,.35);}
+  .cta.dark{background:var(--ink); color:var(--lime);}
+  .cta svg{display:block;}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>DriveBack — photo ad set (1:1, 1080×1080)</h1>
+  <p>Five scroll-stopping concepts with stock imagery (cars + people). Click <b>Download PNG</b> under any ad to export a ready-to-upload 1080×1080 file. Photos load from Unsplash; swap the URLs at the top of the script for your Cloudinary links if you prefer.</p>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+/* ---- swap these for your own Cloudinary URLs any time ---- */
+const IMG = {
+  forecourt: "https://images.unsplash.com/photo-1574023240744-64c47c8c0676?q=80&w=1600&auto=format&fit=crop",
+  wheel:     "https://images.unsplash.com/photo-1524114051012-0a2aa8dae4e1?q=80&w=1600&auto=format&fit=crop",
+  driver:    "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=1600&auto=format&fit=crop&crop=faces",
+  keys:      "https://images.unsplash.com/photo-1533558701576-23c65e0272fb?q=80&w=1600&auto=format&fit=crop",
+  buying:    "https://images.unsplash.com/photo-1498887960847-2a5e46312788?q=80&w=1600&auto=format&fit=crop&crop=faces"
+};
+
+const MARK = `<svg class="mark" viewBox="0 0 100 100" width="56" height="56" aria-hidden="true">
+  <rect width="100" height="100" rx="26" fill="#C7F838"/>
+  <path d="M60 28 L38 50 L60 72" stroke="#0A0F1E" stroke-width="11" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M40 50 H74" stroke="#0A0F1E" stroke-width="11" stroke-linecap="round"/></svg>`;
+const ARROW = `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
+
+/* scrim presets — stronger where the text sits */
+const SCRIM_BOTTOM = "linear-gradient(to top, rgba(10,15,30,.97) 4%, rgba(10,15,30,.86) 26%, rgba(10,15,30,.40) 55%, rgba(10,15,30,.18) 100%)";
+const SCRIM_BOTTOM_TINT = "linear-gradient(to top, rgba(10,15,30,.97) 4%, rgba(10,15,30,.88) 28%, rgba(10,15,30,.45) 56%, rgba(10,15,30,.22) 100%)";
+
+const ADS = [
+  { id:"ad1_payout", file:"driveback_photo_ad1_payout", label:"1 · Payout (cars)", img:IMG.forecourt,
+    body:`<div class="brand">${MARK}<span class="wm">Drive<b>Back</b></span></div>
+      <div class="content">
+        <span class="eyebrow">PCP &amp; HP CAR FINANCE</span>
+        <h2 class="head">Drove a car on finance? You could be owed <span class="hl">£1,000s</span>.</h2>
+        <div class="chip">AVG REFUND <b>£1,658</b></div>
+        <div><span class="cta">Check in 60 seconds ${ARROW}</span></div>
+      </div>` },
+
+  { id:"ad2_secret", file:"driveback_photo_ad2_secret", label:"2 · Secret (driving)", img:IMG.wheel,
+    body:`<div class="brand">${MARK}<span class="wm">Drive<b>Back</b></span></div>
+      <div class="content">
+        <span class="eyebrow">HIDDEN CAR-FINANCE COMMISSION</span>
+        <h2 class="head">Most drivers have <span class="hl">no idea</span> the bank owes them.</h2>
+        <div><span class="cta">See if you qualify ${ARROW}</span></div>
+      </div>` },
+
+  { id:"ad3_qualifier", file:"driveback_photo_ad3_qualifier", label:"3 · Qualifier (driver)", img:IMG.driver,
+    body:`<div class="brand">${MARK}<span class="wm">Drive<b>Back</b></span></div>
+      <div class="content">
+        <h2 class="head">Had a car on <span class="hl">PCP or HP</span> between 2007–2024?</h2>
+        <p class="sub">You could be owed <span class="hl">£1,658</span> on average.</p>
+        <div><span class="cta">Tap to check — it's free ${ARROW}</span></div>
+      </div>` },
+
+  { id:"ad4_outcome", file:"driveback_photo_ad4_outcome", label:"4 · Outcome (keys)", img:IMG.keys,
+    body:`<div class="brand">${MARK}<span class="wm">Drive<b>Back</b></span></div>
+      <div class="content">
+        <span class="eyebrow">NO WIN, NO FEE</span>
+        <h2 class="head">Get the car-finance <span class="hl">refund</span> you're owed.</h2>
+        <div><span class="cta">Check what you're owed ${ARROW}</span></div>
+      </div>` },
+
+  { id:"ad5_deadline", file:"driveback_photo_ad5_deadline", label:"5 · Deadline (buying)", img:IMG.buying,
+    body:`<div class="brand">${MARK}<span class="wm">Drive<b>Back</b></span></div>
+      <div class="content">
+        <span class="eyebrow coral">FINAL DEADLINE · 31 AUG 2027</span>
+        <h2 class="head">Don't miss the <span class="hl">refund</span> you're owed.</h2>
+        <div><span class="cta">Claim before it's gone ${ARROW}</span></div>
+      </div>` }
+];
+
+const grid = document.getElementById('grid');
+ADS.forEach(ad=>{
+  const card=document.createElement('div'); card.className='card';
+  const scrim = ad.id==='ad5_deadline' ? SCRIM_BOTTOM_TINT : SCRIM_BOTTOM;
+  card.innerHTML = `
+    <div class="frame">
+      <div class="stage" id="${ad.id}">
+        <div class="bg" style="background-image:url('${ad.img}')"></div>
+        <div class="scrim" style="background:${scrim}"></div>
+        <div class="glow"></div>
+        ${ad.body}
+      </div>
+    </div>
+    <div class="controls">
+      <span class="label">${ad.label}</span>
+      <button class="dlbtn" data-id="${ad.id}" data-file="${ad.file}">Download PNG</button>
+    </div>`;
+  grid.appendChild(card);
+});
+
+async function exportStage(id, file){
+  const stage=document.getElementById(id);
+  const prev=stage.style.transform;
+  await document.fonts.ready;
+  stage.style.transform='none';                 // render at true 1080×1080
+  try{
+    const canvas=await html2canvas(stage,{useCORS:true, allowTaint:false, backgroundColor:'#0A0F1E',
+      width:1080, height:1080, scale:1, logging:false, imageTimeout:15000});
+    const a=document.createElement('a'); a.download=file+'_1080.png'; a.href=canvas.toDataURL('image/png'); a.click();
+  }catch(e){
+    alert("Export was blocked by the image host's cross-origin policy.\n\nFix: re-host this photo on your Cloudinary (it allows cross-origin) and replace the URL in the script's IMG list. Then this button will produce the PNG.\n\n("+e.message+")");
+  }finally{
+    stage.style.transform=prev;
+  }
+}
+document.querySelectorAll('.dlbtn').forEach(b=>{
+  b.addEventListener('click', ()=>exportStage(b.dataset.id, b.dataset.file));
+});
+</script>
+</body>
+</html>
