@@ -1679,21 +1679,36 @@ select.control { appearance: none; background-image: url("data:image/svg+xml;utf
       if(wrap) wrap.style.display = 'none';
       var url = ADDRESS_LOOKUP.provider === 'ideal'
         ? 'https://api.ideal-postcodes.co.uk/v1/postcodes/' + encodeURIComponent(pc) + '?api_key=' + key
-        : 'https://api.getAddress.io/find/' + encodeURIComponent(pc) + '?api-key=' + key + '&expand=true&sort=true';
-      fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
-        .then(function(data){
-          var raw = ADDRESS_LOOKUP.provider === 'ideal' ? (data.result || []) : (data.addresses || []);
-          results = raw.map(normalise);
-          if(!results.length){ setStatus('No addresses found for that postcode. Please check it or enter your address below.'); btn.disabled = false; return; }
-          sel.innerHTML = '<option value="">Choose your address (' + results.length + ' found)...</option>';
-          results.forEach(function(a, i){ var o = document.createElement('option'); o.value = i; o.textContent = a.label; sel.appendChild(o); });
-          if(wrap) wrap.style.display = 'block';
-          setStatus('Select your address from the list.'); btn.disabled = false;
-        })
-        .catch(function(){
-          setStatus('Sorry, we could not look that up right now. Please enter your address in the fields below.');
-          fill(fields.postcode, pc.toUpperCase()); btn.disabled = false;
+        : 'https://api.getAddress.io/find/' + encodeURIComponent(pc) + '?api-key=' + key + '&expand=true';
+      fetch(url).then(function(r){
+        return r.text().then(function(text){
+          var data = {}; try { data = text ? JSON.parse(text) : {}; } catch(e){}
+          return { status: r.status, ok: r.ok, data: data };
         });
+      }).then(function(res){
+        btn.disabled = false;
+        if(!res.ok){
+          console.error('[DriveBack address lookup] HTTP ' + res.status, res.data);
+          if(res.status === 404){ setStatus('We could not find that postcode. Please check it and try again, or enter your address in the fields below.'); }
+          else if(res.status === 401 || res.status === 403){ setStatus('The address service is not authorised for this web address yet. Please enter your address in the fields below.'); }
+          else if(res.status === 429){ setStatus('Too many lookups just now. Please wait a few seconds and try again.'); }
+          else { setStatus('Sorry, we could not look that up right now. Please enter your address in the fields below.'); }
+          fill(fields.postcode, pc.toUpperCase());
+          return;
+        }
+        var raw = ADDRESS_LOOKUP.provider === 'ideal' ? (res.data.result || []) : (res.data.addresses || []);
+        results = raw.map(normalise);
+        if(!results.length){ setStatus('No addresses found for that postcode. Please check it or enter your address below.'); return; }
+        sel.innerHTML = '<option value="">Choose your address (' + results.length + ' found)...</option>';
+        results.forEach(function(a, i){ var o = document.createElement('option'); o.value = i; o.textContent = a.label; sel.appendChild(o); });
+        if(wrap) wrap.style.display = 'block';
+        setStatus('Select your address from the list.');
+      }).catch(function(err){
+        btn.disabled = false;
+        console.error('[DriveBack address lookup] network or CORS error:', err);
+        setStatus('Sorry, we could not reach the address service. Please enter your address in the fields below.');
+        fill(fields.postcode, pc.toUpperCase());
+      });
     }
     btn.addEventListener('click', lookup);
     pcInput.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); lookup(); } });
