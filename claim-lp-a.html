@@ -727,6 +727,15 @@ select.control { appearance: none; background-image: url("data:image/svg+xml;utf
   ttq.load('YOUR_TIKTOK_PIXEL_ID'); ttq.page();}(window,document,'ttq');
 </script>
 -->
+<style>
+.addr-finder{background:var(--cream,#F4F8FB);border:1px solid var(--line,#E2EAF1);border-radius:12px;padding:14px 14px 12px;margin-bottom:20px;}
+.addr-finder .af-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+.addr-finder .af-row .field{flex:1 1 180px;}
+.af-btn{background:var(--lime-deep,#0E7C52);color:#fff;border:none;border-radius:10px;padding:13px 20px;font-weight:800;font-size:14px;cursor:pointer;white-space:nowrap;font-family:inherit;line-height:1;}
+.af-btn:hover{filter:brightness(1.06);}
+.af-btn:disabled{opacity:.55;cursor:default;}
+.af-status{font-size:12.5px;color:var(--slate,#5B7186);margin:9px 2px 0;line-height:1.45;}
+</style>
 </head>
 <body>
 <!-- ===== In-page confirmation view (revealed after form submit) ===== -->
@@ -1011,7 +1020,22 @@ select.control { appearance: none; background-image: url("data:image/svg+xml;utf
             <p class="step-desc">This helps us match agreements held in your name.</p>
 
             <div class="form-subhead">Your current address <span class="req">*</span></div>
-            <div class="form-sub-desc">Start typing your address and we'll do the rest.</div>
+            <div class="form-sub-desc">Enter your postcode to find your address, then check the details below.</div>
+
+            <div class="addr-finder" id="addrFinder">
+              <div class="af-row">
+                <div class="field" style="margin:0;">
+                  <label>Find your address by postcode</label>
+                  <input class="control" type="text" id="findPostcode" placeholder="e.g. SW1A 1AA" autocomplete="off" inputmode="text" style="text-transform:uppercase;">
+                </div>
+                <button type="button" class="af-btn" id="findAddrBtn">Find address</button>
+              </div>
+              <div class="field af-select" id="addrSelectWrap" style="display:none;margin:10px 0 2px;">
+                <label>Select your address</label>
+                <select class="control" id="addrSelect"><option value="">Choose your address...</option></select>
+              </div>
+              <div class="af-status" id="findStatus">Enter your postcode and tap Find address, or simply fill in the fields below.</div>
+            </div>
 
             <div class="field">
               <label>Street address</label>
@@ -1050,7 +1074,23 @@ select.control { appearance: none; background-image: url("data:image/svg+xml;utf
 
             <div class="prev-address" id="prevAddress">
               <div class="form-subhead">Your previous address <span class="req">*</span></div>
-              <div class="form-sub-desc">Start typing your address and we'll do the rest.</div>
+              <div class="form-sub-desc">Enter your postcode to find your address, then check the details below.</div>
+
+              <div class="addr-finder" id="addrFinderPrev">
+                <div class="af-row">
+                  <div class="field" style="margin:0;">
+                    <label>Find your address by postcode</label>
+                    <input class="control" type="text" id="findPostcodePrev" placeholder="e.g. M1 1AE" autocomplete="off" style="text-transform:uppercase;">
+                  </div>
+                  <button type="button" class="af-btn" id="findAddrBtnPrev">Find address</button>
+                </div>
+                <div class="field af-select" id="addrSelectWrapPrev" style="display:none;margin:10px 0 2px;">
+                  <label>Select your address</label>
+                  <select class="control" id="addrSelectPrev"><option value="">Choose your address...</option></select>
+                </div>
+                <div class="af-status" id="findStatusPrev">Enter your postcode and tap Find address, or simply fill in the fields below.</div>
+              </div>
+
               <div class="field">
                 <label>Street address</label>
                 <input class="control" type="text" name="prevStreet" placeholder="e.g. 4 Park Lane" autocomplete="off">
@@ -1574,6 +1614,95 @@ select.control { appearance: none; background-image: url("data:image/svg+xml;utf
       $('#termsContent').scrollTop = 0;
     });
   });
+
+  /* ===== UK address finder (Step 2) =====
+     getAddress.io "domain tokens" are tied to a single host, so paste each FULL token
+     (use the copy icon in the Domain Tokens table of your getAddress.io dashboard) next to
+     its matching host below. The page automatically uses the token for whatever host it is
+     running on, so this same file works on the GitHub test site and the live domain with no
+     edits when you switch. To use Ideal Postcodes instead, set provider to 'ideal'. */
+  const ADDRESS_LOOKUP = {
+    enabled: true,
+    provider: 'getaddress',
+    tokens: {
+      'charliepiper14.github.io': 'dtoken_hEDzcyiWMr3Q0EGsjePGpJoM2DtXV5ezUN9cFJSTpM4nQKEHtYxliI1eyhADhPZynvKrSYEvJvmUfZkU3ENyAU7gPHk7dQryqZH583T7ctkIme-6thfB8FFs-zNe4E3ctYzdKbEzbbx4bonGTIPvffGbiToGP6BMsZNwMOP2azOPPwrvlM2KhhkFNEJga0dV7mmudd6vTEuz0zZwWfZbUkh3HxL012B9Mogi7R2RMpY',
+      'driveback.claims': 'dtoken_hEDzcyiWMr3Q0EGsjePGpJoM2DtXV5ezUN9cFJSTpM4nQKEHtYxliI1eyhADhPZy_ikFubF4KWlWtl2w0IIHHcRh0nZXA8snjuF7YQ6uNY4DKzMxArf-oxWPlvr6VY8vMzK_R3oI2BK9kxRlt9mtuAXmUCpbOjcBOKpg2_7qGvmvHzKDqCWUVFr5YaO_9WJUQYhslDZt3e3s6GUbl76c6w'
+    },
+    apiKey: '' // optional fallback for any other host (leave blank on public sites)
+  };
+  function addrActiveKey(){
+    var host = (location.hostname || '').toLowerCase();
+    var t = (ADDRESS_LOOKUP.tokens && ADDRESS_LOOKUP.tokens[host]) || ADDRESS_LOOKUP.apiKey || '';
+    return (!t || t.indexOf('PASTE') === 0) ? '' : t;
+  }
+  function initAddressFinder(opt){
+    var pcInput = document.getElementById(opt.pcId);
+    var btn = document.getElementById(opt.btnId);
+    var wrap = document.getElementById(opt.wrapId);
+    var sel = document.getElementById(opt.selId);
+    var statusEl = document.getElementById(opt.statusId);
+    if(!pcInput || !btn) return;
+    var fields = opt.fields, results = [];
+    function setStatus(t){ if(statusEl) statusEl.textContent = t; }
+    function fill(name, val){
+      if(!name) return;
+      var el = document.querySelector('[name="' + name + '"]');
+      if(el){ el.value = val || ''; el.dispatchEvent(new Event('input', { bubbles: true })); }
+    }
+    function normalise(a){
+      if(ADDRESS_LOOKUP.provider === 'ideal'){
+        return { line1: a.line_1 || '', line2: [a.line_2, a.line_3].filter(Boolean).join(', '),
+                 city: a.post_town || '', county: a.county || '',
+                 label: [a.line_1, a.line_2, a.post_town].filter(Boolean).join(', ') };
+      }
+      return { line1: a.line_1 || '', line2: [a.line_2, a.line_3, a.line_4].filter(Boolean).join(', '),
+               city: a.town_or_city || a.locality || '', county: a.county || '',
+               label: (a.formatted_address && a.formatted_address.filter(Boolean).join(', ')) ||
+                      [a.line_1, a.town_or_city].filter(Boolean).join(', ') };
+    }
+    function applyPrefill(idx){
+      var a = results[idx]; if(!a) return;
+      fill(fields.street, a.line1); fill(fields.line2, a.line2);
+      fill(fields.city, a.city); fill(fields.county, a.county);
+      fill(fields.postcode, (pcInput.value || '').toUpperCase().trim());
+      setStatus('Address added below. Please check the details are correct.');
+    }
+    function lookup(){
+      var pc = (pcInput.value || '').trim();
+      if(!pc){ setStatus('Please enter your postcode.'); return; }
+      var key = addrActiveKey();
+      if(!ADDRESS_LOOKUP.enabled || !key){
+        setStatus('Address finder is being set up. Please enter your address in the fields below.');
+        fill(fields.postcode, pc.toUpperCase()); return;
+      }
+      setStatus('Searching for addresses...'); btn.disabled = true;
+      if(wrap) wrap.style.display = 'none';
+      var url = ADDRESS_LOOKUP.provider === 'ideal'
+        ? 'https://api.ideal-postcodes.co.uk/v1/postcodes/' + encodeURIComponent(pc) + '?api_key=' + key
+        : 'https://api.getAddress.io/find/' + encodeURIComponent(pc) + '?api-key=' + key + '&expand=true&sort=true';
+      fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function(data){
+          var raw = ADDRESS_LOOKUP.provider === 'ideal' ? (data.result || []) : (data.addresses || []);
+          results = raw.map(normalise);
+          if(!results.length){ setStatus('No addresses found for that postcode. Please check it or enter your address below.'); btn.disabled = false; return; }
+          sel.innerHTML = '<option value="">Choose your address (' + results.length + ' found)...</option>';
+          results.forEach(function(a, i){ var o = document.createElement('option'); o.value = i; o.textContent = a.label; sel.appendChild(o); });
+          if(wrap) wrap.style.display = 'block';
+          setStatus('Select your address from the list.'); btn.disabled = false;
+        })
+        .catch(function(){
+          setStatus('Sorry, we could not look that up right now. Please enter your address in the fields below.');
+          fill(fields.postcode, pc.toUpperCase()); btn.disabled = false;
+        });
+    }
+    btn.addEventListener('click', lookup);
+    pcInput.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); lookup(); } });
+    if(sel) sel.addEventListener('change', function(){ if(sel.value !== '') applyPrefill(parseInt(sel.value, 10)); });
+  }
+  initAddressFinder({ pcId:'findPostcode', btnId:'findAddrBtn', wrapId:'addrSelectWrap', selId:'addrSelect', statusId:'findStatus',
+    fields:{ street:'curStreet', line2:'curLine2', city:'curCity', county:'curCounty', postcode:'curPostcode' } });
+  initAddressFinder({ pcId:'findPostcodePrev', btnId:'findAddrBtnPrev', wrapId:'addrSelectWrapPrev', selId:'addrSelectPrev', statusId:'findStatusPrev',
+    fields:{ street:'prevStreet', line2:'prevLine2', city:'prevCity', county:'prevCounty', postcode:'prevPostcode' } });
 
   /* ============================================================
      SIGNATURE PAD (mouse + touch)
